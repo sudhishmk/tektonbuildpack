@@ -1,33 +1,4 @@
 apiVersion: tekton.dev/v1beta1
-kind: Task
-metadata:
-  name: buildpacks-build-java
-spec:
-  params:
-    - name: IMAGE
-      type: string
-      description: The image to build.
-    - name: BUILDER_IMAGE
-      type: string
-      description: The builder image to use.
-      default: paketobuildpacks/builder:base
-  steps:
-    - name: build
-      image: gcr.io/tekton-releases/github.com/tektoncd/catalog/task/buildpacks/0.2/buildpacks
-      params:
-        - name: IMAGE
-          value: $(params.IMAGE)
-        - name: BUILDER_IMAGE
-          value: $(params.BUILDER_IMAGE)
-      workingDir: /workspace/source
-      volumeMounts:
-        - name: source-repo
-          mountPath: /workspace/source
-  volumes:
-    - name: source-repo
-      emptyDir: {}
----
-apiVersion: tekton.dev/v1beta1
 kind: Pipeline
 metadata:
   name: build-java-image
@@ -42,6 +13,9 @@ spec:
     - name: SOURCE_REVISION
       type: string
       description: The git revision.
+    - name: BUILDER_IMAGE
+      type: string
+      description: The builder image to be used.
   tasks:
     - name: fetch-source
       taskRef:
@@ -56,14 +30,19 @@ spec:
           workspace: source-workspace
     - name: build-image
       taskRef:
-        name: buildpacks-build-java
+        name: buildpacks
       params:
-        - name: IMAGE
+        - name: APP_IMAGE
           value: $(params.IMAGE)
+        - name: BUILDER_IMAGE
+          value: $(params.BUILDER_IMAGE)
       workspaces:
-        - name: source-repo
+        - name: source
           workspace: source-workspace
+        - name: dockerconfig
+          workspace: docker-config
       runAfter:
         - fetch-source
   workspaces:
     - name: source-workspace
+    - name: docker-config

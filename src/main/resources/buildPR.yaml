@@ -7,9 +7,11 @@ spec:
     name: build-java-image
   params:
     - name: IMAGE
-      value: quay.io/rhn-support-sudnair/buildpacktest:test
+      value: localhost:5000/buildpacktest
+    - name: BUILDER_IMAGE
+      value: paketobuildpacks/builder:base
     - name: SOURCE_URL
-      value: git@github.com:sudhishmk/tektonbuildpack.git
+      value: https://github.com/sudhishmk/tektonbuildpack.git
     - name: SOURCE_REVISION
       value: main
   workspaces:
@@ -21,3 +23,6 @@ spec:
           resources:
             requests:
               storage: 1Gi
+    - name: docker-config
+      secret:
+        secretName: docker-config
