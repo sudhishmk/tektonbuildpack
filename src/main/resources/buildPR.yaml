@@ -1,0 +1,23 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: build-java-image-run
+spec:
+  pipelineRef:
+    name: build-java-image
+  params:
+    - name: IMAGE
+      value: quay.io/rhn-support-sudnair/buildpacktest:test
+    - name: SOURCE_URL
+      value: git@github.com:sudhishmk/tektonbuildpack.git
+    - name: SOURCE_REVISION
+      value: main
+  workspaces:
+    - name: source-workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: 1Gi
